@@ -1,0 +1,135 @@
+
+//***********************************************************************************
+//* Description
+//*------------
+//* Manage Test Configuration Tab - Delete PopUp "Cancel" Button Functionality
+//***********************************************************************************
+//*
+//* Author           : Sasikala Ambalavanar
+//* Date Written     : 22/06/2023
+//* 
+//*
+//* 
+//* Test Case Number       Date         Intis        Comments
+//* ================       ====         =====        ========
+//*   MTC-MT-406          22/06/2023   Sasi     Original Version
+//*
+//************************************************************************************
+
+package com.qa.automation.qdms.testconfig.testcases.properties.managetests;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openqa.selenium.By;
+import org.openqa.selenium.ElementClickInterceptedException;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.PageFactory;
+import org.testng.annotations.Test;
+
+import com.aventstack.extentreports.Status;
+import com.qa.automation.qdms.base.DriverIntialization;
+import com.qa.automation.qdms.commonmethods.CommonMethods;
+import com.qa.automation.qdms.commonmethods.Logout;
+import com.qa.automation.qdms.commonmethods.Searching;
+import com.qa.automation.qdms.testconfig.pages.ManageTestsPage;
+import com.qa.automation.qdms.testconfig.testcases.properties.commonnavigation.NavigateManageTestFromLogin;
+
+public class DeletePopUpCancelButtonFunctionality extends DriverIntialization {
+	static ManageTestsPage Managepg = new ManageTestsPage();
+	static String code = null;
+
+	@Test
+	public static void DeletePopupCancelBtn() throws InterruptedException, IOException {
+		PageFactory.initElements(driver, Managepg);
+	
+		// Login System & Reach Manage Test
+		NavigateManageTestFromLogin.navigateManageTestFromLogin("Manage Tests", 1);
+
+		// Check Relevant Test Cancel Button Properties
+		DeletepopupCancelbutton();
+
+		// Driver Refresh
+		driver.navigate().refresh();
+
+		// LOGOUT
+		Logout.LogoutFunction();
+	}
+
+	// Click Manage Test Delete Pop up Cancel button
+	public static void DeletepopupCancelbutton() throws IOException, InterruptedException {
+
+		// Excel Method
+		FileInputStream file = new FileInputStream(
+				System.getProperty("user.dir") + "\\src\\test\\resources\\Excel\\Test Configuration Properties.xlsx");
+		XSSFWorkbook workbook = new XSSFWorkbook(file);
+		XSSFSheet sheet = workbook.getSheet("Manage_Tests");
+		int firstrow = CommonMethods.getFirstRowNum(
+				System.getProperty("user.dir") + "\\src\\test\\resources\\Excel\\Test Configuration Properties.xlsx",
+				"Manage_Tests", "MTC-MT-406");
+
+		XSSFRow row = sheet.getRow(firstrow);
+		code = (String) row.getCell(2).getStringCellValue();
+
+		// Search Specific Delete Icon
+		Searching.searchvalue(code, 1);
+
+		try {
+			// Locate the Relevant Icon
+			WebElement ManageTestDeleteIcon = driver.findElement(By.xpath("//td[1][contains(text(),'" + code
+					+ "')]/following-sibling::td[16]//span[contains(@class,'anticon-delete')]"));
+
+			// Click on Manage Test Delete Icon Icon
+			ManageTestDeleteIcon.click();
+
+			testCase = extent.createTest("Delete Popup Cancel Button Click");
+			testCase.log(Status.INFO, "Clicked on the element 'Delete Popup Cancel Button'");
+			testCase.log(Status.PASS, "TEST PASS ☑");
+
+			Thread.sleep(1000);
+
+		} catch (NoSuchElementException e) {
+			extent.createTest("Delete Popup Cancel Button Element Identify");
+			testCase.log(Status.INFO, "Unable to Locate the element 'Delete Popup Cancel Button'");
+			testCase.log(Status.FAIL, "TEST FAIL ❎");
+
+		} catch (ElementClickInterceptedException e) {
+			testCase = extent.createTest("Delete Popup Cancel Button Element Click Interupted");
+			testCase.log(Status.INFO, "Unable to Click on the element 'Delete Popup Cancel Button'");
+			testCase.log(Status.FAIL, "TEST FAIL ❎");
+
+		} catch (Exception e) {
+			testCase = extent.createTest("Delete Popup Cancel Button' Checking Terminated");
+			testCase.log(Status.INFO, "'Delete Popup Cancel Button' IS ENABLE OR VISIBLE");
+			testCase.log(Status.FAIL, "TEST FAIL ❎");
+		}
+
+		Thread.sleep(1000);
+		// Check Cancel Button Display
+		try {
+			if (ManageTestsPage.deleteCancelButtonMT.isDisplayed()) {
+				testCase = extent.createTest("STEP--CANCEL BUTTON IS DISPLAYED");
+				testCase.log(Status.PASS, "TEST PASS ☑");
+				if (ManageTestsPage.deleteCancelButtonMT.isEnabled()) {
+					testCase = extent.createTest("STEP--CANCEL BUTTON IS ENABLED");
+					testCase.log(Status.PASS, "TEST PASS ☑");
+
+				} else {
+					testCase = extent.createTest("STEP--CANCEL BUTTON IS NOT ENABLED");
+					testCase.log(Status.FAIL, "TEST FAIL ❎");
+				}
+			} else {
+				testCase = extent.createTest("STEP--CANCEL BUTTON IS NOT DISPLAYED");
+				testCase.log(Status.FAIL, "TEST FAIL ❎");
+			}
+		} catch (Exception e) {
+			testCase = extent.createTest("STEP--CANCEL BUTTON IS ENABLED");
+			testCase = extent.createTest("STEP--CANCEL BUTTON IS DISPLAYED");
+			testCase.log(Status.FAIL, "TEST FAIL ❎");
+		}
+	}
+}
